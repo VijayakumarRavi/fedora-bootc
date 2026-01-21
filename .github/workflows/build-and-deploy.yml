@@ -17,9 +17,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    container:
-      image: catthehacker/ubuntu:act-latest
-      options: --user 0:0 --privileged
     steps:
       # - name: Free Disk Space (Ubuntu)
       #   uses: jlumbroso/free-disk-space@main

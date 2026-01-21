@@ -7,7 +7,7 @@ RUN curl -s -o /etc/yum.repos.d/tailscale.repo https://pkgs.tailscale.com/stable
 
 RUN dnf remove -y firefox tcl
 
-RUN dnf copr enable solopasha/hyprland -y
+RUN dnf copr -y enable solopasha/hyprland
 
 RUN dnf in -y alacritty \
 	autoconf \
