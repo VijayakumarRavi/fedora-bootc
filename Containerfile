@@ -28,11 +28,8 @@ RUN dnf in -y alacritty \
 	ostree-devel \
 	pre-commit \
 	python3-pip \
-	qemu \
-	qemu-kvm \
 	ripgrep \
 	tmux \
-	virt-install \
 	zsh \
 	waybar \
 	tailscale && \
