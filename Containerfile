@@ -10,30 +10,29 @@ RUN dnf remove -y firefox tcl
 RUN dnf copr -y enable solopasha/hyprland
 
 RUN dnf in -y alacritty \
-	autoconf \
-	cockpit \
-	cockpit-machines \
-	bison \
-	flex \
-	openssl-devel \
-	hyprland \
-	gdb \
-	glib \
-	libvirt \
-	libvirt-client \
-	libzstd-devel \
-	lld \
-	llvm \
-	lua5.1-lpeg \
-	make \
-	neovim \
-	ostree-devel \
-	pre-commit \
-	python3-pip \
-	ripgrep \
-	tmux \
-	zsh \
-	waybar \
-	tailscale && \
-
-	dnf clean all
+    autoconf \
+    cockpit \
+    cockpit-machines \
+    bison \
+    flex \
+    openssl-devel \
+    hyprland \
+    gdb \
+    glib \
+    libvirt \
+    libvirt-client \
+    libzstd-devel \
+    lld \
+    llvm \
+    lua5.1-lpeg \
+    make \
+    neovim \
+    ostree-devel \
+    pre-commit \
+    python3-pip \
+    ripgrep \
+    tmux \
+    zsh \
+    waybar \
+    tailscale && \
+    dnf clean all
