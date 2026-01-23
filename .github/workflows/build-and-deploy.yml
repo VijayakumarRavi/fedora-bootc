@@ -1,4 +1,4 @@
-name: Deploy Images to Gitea Registry
+name: Deploy Images to Github Registry
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: git.home.vjlab.dev
   IMAGE_NAME: ${{ github.repository }}
-  FULL_IMAGE_NAME: git.home.vjlab.dev/vijay/fedora-bootc:rawhide-silverblue
+  FULL_IMAGE_NAME: git.home.vjlab.dev/vijay/fedora-bootc:42
 
 jobs:
   build-and-push:
@@ -28,75 +28,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GITEA
+      - name: Login to Gitea
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.PUSH_TOKEN }}
 
-      - name: Build and Push Silverblue Image
-        run: |
-          docker build -f Containerfile --tag ${{ env.FULL_IMAGE_NAME }} --build-arg=FEDORA_DE=silverblue .
-          docker push ${{ env.FULL_IMAGE_NAME }}
-
-  release-images:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: read
-    steps:
-      - name: Free Disk Space
-        uses: jlumbroso/free-disk-space@main
+      - name: Build and Push
+        uses: docker/build-push-action@v5
         with:
-          tool-cache: true
-
-      - name: Login to GITEA
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.PUSH_TOKEN }}
-
-      - name: Create Output Directories
-        run: mkdir -p output/qcow2 output/iso
-
-      - name: Build QCOW2 Image
-        # We mount the host's docker config so the builder can pull your private image
-        run: |
-          docker run --rm --privileged \
-            -v ./output/qcow2:/output \
-            -v $HOME/.docker/config.json:/run/containers/0/auth.json \
-            quay.io/centos-bootc/bootc-image-builder:latest \
-            --type qcow2 \
-            ${{ env.FULL_IMAGE_NAME }}
-
-      - name: Build ISO Image
-        run: |
-          docker run --rm --privileged \
-            -v ./output/iso:/output \
-            -v $HOME/.docker/config.json:/run/containers/0/auth.json \
-            quay.io/centos-bootc/bootc-image-builder:latest \
-            --type anaconda-iso \
-            ${{ env.FULL_IMAGE_NAME }}
-
-      - name: Rename Artifacts
-        # Renaming to something friendly for the release
-        run: |
-          mv output/qcow2/disk.qcow2 fedora-silverblue-rawhide.qcow2
-          mv output/iso/install.iso fedora-silverblue-rawhide.iso
-
-      - name: Create/Update Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: nightly
-          name: Nightly Build
-          body: "Automated nightly build from master."
-          draft: false
-          prerelease: true
-          files: |
-            fedora-silverblue-rawhide.qcow2
-            fedora-silverblue-rawhide.iso
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
+          context: .
+          file: Containerfile
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.FULL_IMAGE_NAME }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,0 +1,13 @@
+[Unit]
+Description=Install Flatpaks
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/usr/bin/sleep 10
+ExecStart=/usr/bin/flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+ExecStart=/usr/bin/flatpak install -y flathub app.zen_browser.zen org.localsend.localsend_app io.kopia.KopiaUI dev.zed.Zed
+
+[Install]
+WantedBy=multi-user.target
