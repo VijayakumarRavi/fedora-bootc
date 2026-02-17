@@ -32,6 +32,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     cliphist \
     dgop \
     hyprland \
+    socat \
     dms dms-greeter \
     mediawriter \
     k9s \
