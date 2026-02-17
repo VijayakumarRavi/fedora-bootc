@@ -1,18 +1,27 @@
-name: Deploy Images to Github Registry
+name: Deploy Images to GitHub Registry
 
 on:
   push:
     branches:
       - master
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "23 0 * * *"
+
+env:
+  LATEST_VERSION: "43"
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["42", "43"]
+
     permissions:
       contents: read
       packages: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,8 +36,17 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{github.actor}}
-          password: ${{secrets.GITHUB_TOKEN}}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/vijayakumarravi/fedora-bootc
+          tags: |
+            type=raw,value=${{ matrix.version }}
+            type=raw,value=latest,enable=${{ matrix.version == env.LATEST_VERSION }}
 
       - name: Build and Push
         uses: docker/build-push-action@v5
@@ -37,6 +55,9 @@ jobs:
           file: Containerfile
           platforms: linux/arm64
           push: true
-          tags: ghcr.io/vijayakumarravi/fedora-bootc:42
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          build-args: |
+            FEDORA_MAJOR_VERSION=${{ matrix.version }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=build-${{ matrix.version }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.version }}

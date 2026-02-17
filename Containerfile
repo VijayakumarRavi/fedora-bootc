@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG FEDORA_MAJOR_VERSION=42
+ARG FEDORA_MAJOR_VERSION=43
 ARG FEDORA_DE=base-atomic
 
 FROM quay.io/fedora-asahi-remix-atomic-desktops/${FEDORA_DE}:${FEDORA_MAJOR_VERSION}
