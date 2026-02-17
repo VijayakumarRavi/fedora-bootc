@@ -4,23 +4,38 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
   schedule:
     - cron: "23 0 * * *"
 
-env:
-  LATEST_VERSION: "43"
-
 jobs:
-  build-and-push:
+  check-upstream:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        version: ["42", "43"]
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      latest: ${{ steps.set-matrix.outputs.latest }}
+    steps:
+      - name: Fetch and Filter Tags
+        id: set-matrix
+        run: |
+          TAGS=$(curl -s "https://quay.io/api/v1/repository/fedora-asahi-remix-atomic-desktops/base-atomic/tag/" | \
+            jq -c '[.tags[].name | select(test("^[0-9]+$"))] | sort_by(tonumber) | unique')
 
+          LATEST=$(echo "$TAGS" | jq -r '.[-1]')
+
+          echo "matrix=$TAGS" >> "$GITHUB_OUTPUT"
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+
+  build-and-push:
+    needs: check-upstream
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJson(needs.check-upstream.outputs.matrix) }}
 
     steps:
       - name: Checkout repository
@@ -39,14 +54,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels)
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/vijayakumarravi/fedora-bootc
           tags: |
             type=raw,value=${{ matrix.version }}
-            type=raw,value=latest,enable=${{ matrix.version == env.LATEST_VERSION }}
+            type=raw,value=latest,enable=${{ matrix.version == needs.check-upstream.outputs.latest }}
 
       - name: Build and Push
         uses: docker/build-push-action@v5
