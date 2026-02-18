@@ -25,6 +25,7 @@ jobs:
 
           echo "matrix=$TAGS" >> "$GITHUB_OUTPUT"
           echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "matrix=$TAGS latest=$LATEST"
 
   build-and-push:
     needs: check-upstream

@@ -40,6 +40,7 @@ RUN --mount=type=cache,target=/var/cache/libdnf5 \
     neomutt \
     neovim \
     niri \
+    wtype \
     pre-commit \
     ripgrep \
     restic autorestic \
